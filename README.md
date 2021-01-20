@@ -1,13 +1,11 @@
+[简体中文](README_cn.md) | English
 
-# Special Applications
+# PaddleVideo
 
-we release some interesting applications in this branch.
+## Introduction
 
-## [VideoTag](VideoTag/)
+![python version](https://img.shields.io/badge/python-3.7+-orange.svg) ![paddle version](https://img.shields.io/badge/PaddlePaddle-2.0-blue)
 
-<<<<<<< HEAD
-## [FootballAction](FootballAction/)
-=======
 
 PaddleVideo is a toolset for video recognition, action localization, and spatio temporal action detection tasks prepared for the industry and academia. This repository provides examples and best practice guildelines for exploring deep learning algorithm in the scene of video area. We devote to support experiments and utilities which can significantly reduce the "time to deploy". By the way, this is also a proficiency verification and implementation of the newest PaddlePaddle 2.0 in the video field.
 
@@ -215,4 +213,3 @@ PaddleVideo is released under the [Apache 2.0 license](LICENSE).
 
 ## Contributing
 This poject welcomes contributions and suggestions. Please see our [contribution guidelines](docs/CONTRIBUTING.md).
->>>>>>> 0ab88278c85b2550e21e7933c6330042dd3afc14
