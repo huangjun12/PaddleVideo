@@ -1,5 +1,6 @@
 [简体中文](README_cn.md) | English
 
+<<<<<<< HEAD
 # PaddleVideo
 
 ## Introduction
@@ -213,3 +214,14 @@ PaddleVideo is released under the [Apache 2.0 license](LICENSE).
 
 ## Contributing
 This poject welcomes contributions and suggestions. Please see our [contribution guidelines](docs/CONTRIBUTING.md).
+=======
+# Applications
+
+we release some interesting projects in this branch.
+
+- [VideoTag](VideoTag/)
+
+- [FootballAction](FootballAction/)
+
+- welcomes your interesting projects
+>>>>>>> 28c62eb2522c55608772e3dd5531467b4b4bcd40
