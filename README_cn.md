@@ -227,7 +227,11 @@ PaddleVideo飞桨视频模型开发套件，旨在帮助开发者更好的进行
 ## 许可证书
 本项目的发布受[Apache 2.0 license](LICENSE)许可认证。
 
+## 经典视频技术介绍
+- [视频分类及动作识别](https://github.com/PaddlePaddle/PaddleVideo/blob/main/docs/zh-CN/tutorials/summarize.md)
 
 ## 贡献代码
 我们欢迎您的任何贡献并感谢您的支持，更多信息请参考 [contribution guidelines](docs/CONTRIBUTING.md).
+
+- 非常感谢 [mohui37](https://github.com/mohui37) 贡献预测相关代码
 
