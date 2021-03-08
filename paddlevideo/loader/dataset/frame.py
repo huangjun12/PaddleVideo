@@ -51,9 +51,12 @@ class FrameDataset(BaseDataset):
                  num_retries=5,
                  data_prefix=None,
                  test_mode=False,
-                 suffix='img_{:05}.jpg'):
+                 suffix='img_{:05}.jpg',
+                 num_samples_precise_bn=None,
+                 ):
         self.num_retries = num_retries
         self.suffix = suffix
+        self.num_samples_precise_bn = num_samples_precise_bn
         super().__init__(file_path, pipeline, data_prefix, test_mode)
 
     def load_file(self):
@@ -75,16 +78,26 @@ class FrameDataset(BaseDataset):
     def prepare_train(self, idx):
         """Prepare the frames for training/valid given index. """
         #Try to catch Exception caused by reading missing frames files
+        short_cycle = False
+        if isinstance(idx, tuple):
+            idx, short_cycle_idx = idx
+            short_cycle = True
+
         for ir in range(self.num_retries):
             try:
-                results = copy.deepcopy(self.info[idx])
+                #Multi-grid short cycle
+                if short_cycle:
+                    results = copy.deepcopy(self.info[idx])
+                    results['short_cycle_idx'] = short_cycle_idx
+                else:
+                    results = copy.deepcopy(self.info[idx])
                 results = self.pipeline(results)
             except Exception as e:
                 logger.info(e)
                 if ir < self.num_retries - 1:
                     logger.info(
                         "Error when loading {}, have {} trys, will try again".
-                        format(results['frame_dir'], ir))
+                            format(results['frame_dir'], ir))
                 idx = random.randint(0, len(self.info) - 1)
                 continue
             return results['imgs'], np.array([results['labels']])
@@ -101,7 +114,15 @@ class FrameDataset(BaseDataset):
                 if ir < self.num_retries - 1:
                     logger.info(
                         "Error when loading {}, have {} trys, will try again".
-                        format(results['frame_dir'], ir))
+                            format(results['frame_dir'], ir))
                 idx = random.randint(0, len(self.info) - 1)
                 continue
             return results['imgs'], np.array([results['labels']])
+
+    def __len__(self):
+        """get the size of the dataset."""
+        if self.num_samples_precise_bn is None:
+            return len(self.info)
+        else:
+            random.shuffle(self.info)
+            return min(self.num_samples_precise_bn, len(self.info))

@@ -21,9 +21,12 @@ class MultigridSchedule(object):
         # cfg.PIPELINE.train.transform[1]['MultiCrop']['target_size'] during training, so we store their original
         # value in cfg and use them as global variables.
         cfg.MULTIGRID.default_batch_size = cfg.DATASET.batch_size  # total bs,64
-        cfg.MULTIGRID.default_temporal_size = cfg.PIPELINE.train.decode_sampler.num_frames  # 32
-        cfg.MULTIGRID.default_crop_size = cfg.PIPELINE.train.transform[1][
-            'MultiCrop']['target_size']  # 224
+#        cfg.MULTIGRID.default_temporal_size = cfg.PIPELINE.train.decode_sampler.num_frames  # 32
+        cfg.MULTIGRID.default_temporal_size = cfg.PIPELINE.train.sample.num_seg  # 32
+#        cfg.MULTIGRID.default_crop_size = cfg.PIPELINE.train.transform[1][
+#            'MultiCrop']['target_size']  # 224
+        cfg.MULTIGRID.default_crop_size = cfg.PIPELINE.train.transform[2][
+            'RandomCrop']['target_size']  # 224
 
         if cfg.MULTIGRID.LONG_CYCLE:
             self.schedule = self.get_long_cycle_schedule(cfg)
@@ -32,8 +35,8 @@ class MultigridSchedule(object):
             ]
             # Fine-tuning phase.
             cfg.OPTIMIZER.learning_rate.steps[-1] = (
-                cfg.OPTIMIZER.learning_rate.steps[-2] +
-                cfg.OPTIMIZER.learning_rate.steps[-1]) // 2
+                                                            cfg.OPTIMIZER.learning_rate.steps[-2] +
+                                                            cfg.OPTIMIZER.learning_rate.steps[-1]) // 2
             cfg.OPTIMIZER.learning_rate.lrs = [
                 cfg.OPTIMIZER.learning_rate.gamma**s[0] * s[1][0]
                 for s in self.schedule
@@ -70,39 +73,38 @@ class MultigridSchedule(object):
         """
         base_b, base_t, base_s = get_current_long_cycle_shape(
             self.schedule, cur_epoch)
-        if base_s != cfg.PIPELINE.train.transform[1]['MultiCrop'][
-                'target_size'] or base_t != cfg.PIPELINE.train.decode_sampler.num_frames:
+        if base_s != cfg.PIPELINE.train.transform[2]['RandomCrop'][
+            'target_size'] or base_t != cfg.PIPELINE.train.sample.num_seg:
             #NOTE Modify
             # no need to modify, used by pool_size in head, None when multigrid
-            # cfg.MODEL.head.num_frames = base_t
-            # cfg.MODEL.head.crop_size  = base_s
-            cfg.PIPELINE.train.decode_sampler.num_frames = base_t
-            cfg.PIPELINE.train.transform[1]['MultiCrop']['target_size'] = base_s
+            cfg.PIPELINE.train.sample.num_seg = base_t  #NOTE, change net.num_seg?
+#            cfg.MODEL.backbone.num_seg = base_t  #NOTE, change net.num_seg?
+            cfg.PIPELINE.train.transform[2]['RandomCrop']['target_size'] = base_s
             cfg.DATASET.batch_size = base_b * cfg.MULTIGRID.default_batch_size  #change bs
 
             bs_factor = (float(cfg.DATASET.batch_size) /
                          cfg.MULTIGRID.bn_base_size)
 
             if bs_factor == 1:  #single bs == bn_base_size (== 8)
-                cfg.MODEL.backbone.bn_norm_type = "batchnorm"
+                cfg.MODEL.backbone.bn_norm_type = "batchnorm2d"
             else:
-                cfg.MODEL.backbone.bn_norm_type = "sub_batchnorm"
-                cfg.MODEL.backbone.bn_num_splits = int(bs_factor)
+                cfg.MODEL.backbone.bn_norm_type = "sub_batchnorm2d"
+                cfg.MODEL.backbone.bn_num_splits = int(bs_factor)  #NOTE??
 
-            cfg.MULTIGRID.long_cycle_sampling_rate = cfg.PIPELINE.train.decode_sampler.sampling_rate * (
-                cfg.MULTIGRID.default_temporal_size // base_t)
+            cfg.MULTIGRID.long_cycle_sampling_rate = cfg.PIPELINE.train.sample.seg_len * (
+                    cfg.MULTIGRID.default_temporal_size // base_t)
             print("Long cycle updates:")
             print("\tbn_norm_type: {}".format(cfg.MODEL.backbone.bn_norm_type))
-            if cfg.MODEL.backbone.bn_norm_type == "sub_batchnorm":
+            if cfg.MODEL.backbone.bn_norm_type == "sub_batchnorm2d":
                 print("\tbn_num_splits: {}".format(
                     cfg.MODEL.backbone.bn_num_splits))
             print("\tTRAIN.batch_size[single card]: {}".format(
                 cfg.DATASET.batch_size))
             print("\tDATA.NUM_FRAMES x LONG_CYCLE_SAMPLING_RATE: {}x{}".format(
-                cfg.PIPELINE.train.decode_sampler.num_frames,
+                cfg.PIPELINE.train.sample.num_seg,
                 cfg.MULTIGRID.long_cycle_sampling_rate))
             print("\tDATA.train_crop_size: {}".format(
-                cfg.PIPELINE.train.transform[1]['MultiCrop']['target_size']))
+                cfg.PIPELINE.train.transform[2]['RandomCrop']['target_size']))
             return cfg, True
         else:
             return cfg, False
@@ -121,8 +123,8 @@ class MultigridSchedule(object):
         steps = cfg.OPTIMIZER.learning_rate.steps
 
         default_size = float(
-            cfg.PIPELINE.train.decode_sampler.num_frames *
-            cfg.PIPELINE.train.transform[1]['MultiCrop']['target_size']**
+            cfg.PIPELINE.train.sample.num_seg *
+            cfg.PIPELINE.train.transform[2]['RandomCrop']['target_size']**
             2)  # 32 * 224 * 224  C*H*W
         default_iters = steps[-1]  # 196
 
@@ -133,10 +135,10 @@ class MultigridSchedule(object):
         for item in cfg.MULTIGRID.long_cycle_factors:
             t_factor, s_factor = item["value"]
             base_t = int(
-                round(cfg.PIPELINE.train.decode_sampler.num_frames * t_factor))
+                round(cfg.PIPELINE.train.sample.num_seg * t_factor))
             base_s = int(
                 round(
-                    cfg.PIPELINE.train.transform[1]['MultiCrop']['target_size']
+                    cfg.PIPELINE.train.transform[2]['RandomCrop']['target_size']
                     * s_factor))
             if cfg.MULTIGRID.SHORT_CYCLE:
                 shapes = [
@@ -144,12 +146,12 @@ class MultigridSchedule(object):
                         base_t,
                         cfg.MULTIGRID.default_crop_size *
                         cfg.MULTIGRID.short_cycle_factors[0],
-                    ],
+                        ],
                     [
                         base_t,
                         cfg.MULTIGRID.default_crop_size *
                         cfg.MULTIGRID.short_cycle_factors[1],
-                    ],
+                        ],
                     [base_t, base_s],
                 ]  #first two is short_cycle, last is the base long_cycle
             else:

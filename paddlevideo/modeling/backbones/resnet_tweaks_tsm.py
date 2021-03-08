@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import math
 
-import sys
 import paddle
 import paddle.nn as nn
 from paddle.nn import (Conv2D, BatchNorm2D, Linear, Dropout, MaxPool2D,
                        AvgPool2D)
-from paddle import ParamAttr
 import paddle.nn.functional as F
 
 from ..registry import BACKBONES
 from ..weight_init import weight_init_
 from ...utils.save_load import load_ckpt
+from paddlevideo.utils.multigrid import get_norm
+from paddlevideo.utils.multigrid import subn_load
 
 
 class ConvBNLayer(nn.Layer):
@@ -52,7 +50,8 @@ class ConvBNLayer(nn.Layer):
                  groups=1,
                  is_tweaks_mode=False,
                  act=None,
-                 name=None):
+                 name=None,
+                 norm_module=paddle.nn.BatchNorm2D,):
         super(ConvBNLayer, self).__init__()
         self.is_tweaks_mode = is_tweaks_mode
         #ResNet-D 1/2:add a 2×2 average pooling layer with a stride of 2 before the convolution,
@@ -68,25 +67,20 @@ class ConvBNLayer(nn.Layer):
                             stride=stride,
                             padding=(kernel_size - 1) // 2,
                             groups=groups,
-                            weight_attr=ParamAttr(name=name + "_weights"),
                             bias_attr=False)
-        if name == "conv1":
-            bn_name = "bn_" + name
-        else:
-            bn_name = "bn" + name[3:]
 
         self._act = act
-
-        self._batch_norm = BatchNorm2D(out_channels,
-                                       weight_attr=ParamAttr(name=bn_name +
-                                                             "_scale"),
-                                       bias_attr=ParamAttr(bn_name + "_offset"))
+        #self._batch_norm = norm_module(num_features=out_channels,
+        self._bn = norm_module(num_features=out_channels,
+                                       weight_attr=None,
+                                       bias_attr=None)
 
     def forward(self, inputs):
         if self.is_tweaks_mode:
             inputs = self._pool2d_avg(inputs)
         y = self._conv(inputs)
-        y = self._batch_norm(y)
+        #y = self._batch_norm(y)
+        y = self._bn(y)
         if self._act:
             y = getattr(paddle.nn.functional, self._act)(y)
         return y
@@ -100,25 +94,30 @@ class BottleneckBlock(nn.Layer):
                  shortcut=True,
                  if_first=False,
                  num_seg=8,
-                 name=None):
+                 name=None,
+                 norm_module=paddle.nn.BatchNorm2D,
+                 ):
         super(BottleneckBlock, self).__init__()
         self.conv0 = ConvBNLayer(in_channels=in_channels,
                                  out_channels=out_channels,
                                  kernel_size=1,
                                  act="relu",
-                                 name=name + "_branch2a")
+                                 norm_module=norm_module,
+                                 )
         self.conv1 = ConvBNLayer(in_channels=out_channels,
                                  out_channels=out_channels,
                                  kernel_size=3,
                                  stride=stride,
                                  act="relu",
-                                 name=name + "_branch2b")
+                                 norm_module=norm_module,
+                                 )
 
         self.conv2 = ConvBNLayer(in_channels=out_channels,
                                  out_channels=out_channels * 4,
                                  kernel_size=1,
                                  act=None,
-                                 name=name + "_branch2c")
+                                 norm_module=norm_module,
+                                 )
 
         if not shortcut:
             self.short = ConvBNLayer(
@@ -129,12 +128,14 @@ class BottleneckBlock(nn.Layer):
                 1,  #ResNet-D 2/2:add a 2×2 average pooling layer with a stride of 2 before the convolution,
                 #             whose stride is changed to 1, works well in practice.
                 is_tweaks_mode=False if if_first else True,
-                name=name + "_branch1")
+                norm_module=norm_module,
+            )
 
         self.shortcut = shortcut
         self.num_seg = num_seg
 
     def forward(self, inputs):
+#        print('===========', self.num_seg)
         shifts = paddle.fluid.layers.temporal_shift(inputs, self.num_seg,
                                                     1.0 / self.num_seg)
         y = self.conv0(shifts)
@@ -199,11 +200,19 @@ class ResNetTweaksTSM(nn.Layer):
         depth (int): Depth of resnet model.
         pretrained (str): pretrained model. Default: None.
     """
-    def __init__(self, depth, num_seg=8, pretrained=None):
+    def __init__(self,
+                 depth,
+                 num_seg=8,
+                 pretrained=None,
+                 bn_norm_type="batchnorm2d",
+                 bn_num_splits=1,
+                 ):
         super(ResNetTweaksTSM, self).__init__()
         self.pretrained = pretrained
         self.layers = depth
         self.num_seg = num_seg
+        print("bn_norm_type", bn_norm_type)
+        self.norm_module = get_norm(bn_norm_type, bn_num_splits)
 
         supported_layers = [18, 34, 50, 101, 152]
         assert self.layers in supported_layers, \
@@ -228,19 +237,22 @@ class ResNetTweaksTSM(nn.Layer):
                                    kernel_size=3,
                                    stride=2,
                                    act='relu',
-                                   name="conv1_1")
+                                   norm_module=self.norm_module,
+                                   )
         self.conv1_2 = ConvBNLayer(in_channels=32,
                                    out_channels=32,
                                    kernel_size=3,
                                    stride=1,
                                    act='relu',
-                                   name="conv1_2")
+                                   norm_module=self.norm_module,
+                                   )
         self.conv1_3 = ConvBNLayer(in_channels=32,
                                    out_channels=64,
                                    kernel_size=3,
                                    stride=1,
                                    act='relu',
-                                   name="conv1_3")
+                                   norm_module=self.norm_module,
+                                   )
         self.pool2D_max = MaxPool2D(kernel_size=3, stride=2, padding=1)
 
         self.block_list = []
@@ -248,16 +260,9 @@ class ResNetTweaksTSM(nn.Layer):
             for block in range(len(depth)):
                 shortcut = False
                 for i in range(depth[block]):
-                    if self.layers in [101, 152] and block == 2:
-                        if i == 0:
-                            conv_name = "res" + str(block + 2) + "a"
-                        else:
-                            conv_name = "res" + str(block + 2) + "b" + str(i)
-                    else:
-                        conv_name = "res" + str(block + 2) + chr(97 + i)
                     bottleneck_block = self.add_sublayer(
                         'bb_%d_%d' %
-                        (block, i),  #same with PaddleClas, for loading pretrain
+                        (block, i),  # same with PaddleClas, for loading pretrain
                         BottleneckBlock(
                             in_channels=in_channels
                             if i == 0 else out_channels[block] * 4,
@@ -266,7 +271,8 @@ class ResNetTweaksTSM(nn.Layer):
                             num_seg=self.num_seg,
                             shortcut=shortcut,
                             if_first=block == i == 0,
-                            name=conv_name))
+                            norm_module=self.norm_module,
+                        ))
                     in_channels = out_channels[block] * 4
                     self.block_list.append(bottleneck_block)
                     shortcut = True
@@ -278,7 +284,7 @@ class ResNetTweaksTSM(nn.Layer):
                     basic_block = self.add_sublayer(
                         conv_name,
                         BasicBlock(in_channels=in_channels[block]
-                                   if i == 0 else out_channels[block],
+                        if i == 0 else out_channels[block],
                                    out_channels=out_channels[block],
                                    stride=2 if i == 0 and block != 0 else 1,
                                    shortcut=shortcut,
@@ -296,7 +302,9 @@ class ResNetTweaksTSM(nn.Layer):
         #XXX: check bias!!! check pretrained!!!
 
         if isinstance(self.pretrained, str) and self.pretrained.strip() != "":
-            load_ckpt(self, self.pretrained)
+#            load_ckpt(self, self.pretrained)
+            subn_load(self, self.pretrained[:-9])
+#            exit()
         elif self.pretrained is None or self.pretrained.strip() == "":
             for layer in self.sublayers():
                 if isinstance(layer, nn.Conv2D):

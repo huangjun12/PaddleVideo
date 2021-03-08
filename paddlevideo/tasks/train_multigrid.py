@@ -52,7 +52,7 @@ def construct_loader(cfg, places, validate, precise_bn, num_iters_precise_bn,
         bs_factor = [
             int(
                 round((float(
-                    cfg.PIPELINE.train.transform[1]['MultiCrop']['target_size'])
+                    cfg.PIPELINE.train.transform[2]['RandomCrop']['target_size'])
                        / (s * cfg.MULTIGRID.default_crop_size))**2))
             for s in cfg.MULTIGRID.short_cycle_factors
         ]
@@ -60,7 +60,7 @@ def construct_loader(cfg, places, validate, precise_bn, num_iters_precise_bn,
             batch_size * bs_factor[0],
             batch_size * bs_factor[1],
             batch_size,
-        ]
+            ]
         train_dataloader_setting = dict(
             batch_size=batch_sizes,
             multigrid=True,
@@ -312,7 +312,7 @@ def train_model_multigrid(cfg, world_size=1, validate=True):
         aggregate_sub_bn_stats(model)
 
         # 5. Validation
-        if is_eval_epoch(cfg, epoch, total_epochs, multigrid.schedule):
+        if 1: #is_eval_epoch(cfg, epoch, total_epochs, multigrid.schedule):
             logger.info(f"eval in {epoch+1} ...")
             with paddle.fluid.dygraph.no_grad():
                 best, save_best_flag = evaluate(best)
@@ -330,7 +330,7 @@ def train_model_multigrid(cfg, world_size=1, validate=True):
         if is_eval_epoch(
                 cfg, epoch,
                 total_epochs, multigrid.schedule) or epoch % cfg.get(
-                    "save_interval", 10) == 0 or epoch in multi_save_epoch:
+            "save_interval", 10) == 0 or epoch in multi_save_epoch:
             logger.info("[Save parameters] ======")
             subn_save(output_dir, model_name + str(local_rank) + '_', epoch + 1,
                       model, optimizer)

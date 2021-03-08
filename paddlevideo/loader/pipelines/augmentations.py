@@ -27,8 +27,13 @@ class Scale(object):
     Args:
         short_size(float | int): Short size of an image will be scaled to the short_size.
     """
-    def __init__(self, short_size):
-        self.short_size = short_size
+    def __init__(self,
+                 short_size,
+                 short_cycle_factors=[0.5, 0.7071],
+                 default_short_size=256):
+        self.orig_short_size = self.short_size = short_size
+        self.default_short_size = default_short_size
+        self.short_cycle_factors = short_cycle_factors
 
     def __call__(self, results):
         """
@@ -39,6 +44,14 @@ class Scale(object):
         return:
             resized_imgs: List where each item is a PIL.Image after scaling.
         """
+        short_cycle_idx = results.get('short_cycle_idx')
+        if short_cycle_idx in [0, 1]:
+            self.short_size = int(
+                round(self.short_cycle_factors[short_cycle_idx] *
+                      self.default_short_size))
+        else:
+            self.short_size = self.orig_short_size
+
         imgs = results['imgs']
         resized_imgs = []
         for i in range(len(imgs)):
@@ -68,8 +81,15 @@ class RandomCrop(object):
     Args:
         target_size(int): Random crop a square with the target_size from an image.
     """
-    def __init__(self, target_size):
-        self.target_size = target_size
+    def __init__(self,
+                 target_size,
+                 short_cycle_factors=[0.5, 0.7071],
+                 default_target_size=224,
+                 ):
+        self.orig_target_size = self.target_size = target_size
+        self.short_cycle_factors = short_cycle_factors
+        self.default_target_size = default_target_size
+
 
     def __call__(self, results):
         """
@@ -80,6 +100,15 @@ class RandomCrop(object):
         return:
             crop_imgs: List where each item is a PIL.Image after random crop.
         """
+
+        short_cycle_idx = results.get('short_cycle_idx')
+        if short_cycle_idx in [0, 1]:
+            self.target_size = int(
+                round(self.short_cycle_factors[short_cycle_idx] *
+                      self.default_target_size))
+        else:
+            self.target_size = self.orig_target_size
+
         imgs = results['imgs']
         w, h = imgs[0].size
         th, tw = self.target_size, self.target_size
@@ -143,12 +172,17 @@ class MultiScaleCrop(object):
             scales=None,
             max_distort=1,
             fix_crop=True,
-            more_fix_crop=True):
-        self.target_size = target_size
+            more_fix_crop=True,
+            short_cycle_factors=[0.5, 0.7071],
+            default_target_size=224,
+    ):
+        self.orig_target_size = self.target_size = target_size
         self.scales = scales if scales else [1, .875, .75, .66]
         self.max_distort = max_distort
         self.fix_crop = fix_crop
         self.more_fix_crop = more_fix_crop
+        self.short_cycle_factors = short_cycle_factors
+        self.default_target_size = default_target_size
 
     def __call__(self, results):
         """
@@ -159,6 +193,14 @@ class MultiScaleCrop(object):
         results:
 
         """
+        short_cycle_idx = results.get('short_cycle_idx')
+        if short_cycle_idx in [0, 1]:
+            self.target_size = int(
+                round(self.short_cycle_factors[short_cycle_idx] *
+                      self.default_target_size))
+        else:
+            self.target_size = self.orig_target_size
+
         imgs = results['imgs']
 
         input_size = [self.target_size, self.target_size]

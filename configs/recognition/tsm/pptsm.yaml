@@ -119,7 +119,7 @@ PRECISEBN:
   num_iters_preciseBN: 80  # how many batches used to do preciseBN, default 200.
 
 model_name: "ppTSM"
-log_interval: 20 #Optional, the interal of logger, default:10
+log_interval: 1 #20 #Optional, the interal of logger, default:10
 epochs: 80 #Mandatory, total epoch
 log_level: "INFO" #Optional, the logger level. default: "INFO"
 resume_from: "" #checkpoint path.

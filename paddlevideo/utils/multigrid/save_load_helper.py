@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import paddle
-import copy
 
 
 def sub_to_normal_bn(sd):
@@ -106,11 +105,29 @@ def mapping_opt_dict(opt_dict, model_key_list):
 
     PNAME = {
         "LR_Scheduler": [],
-        "conv3d_": [],
-        "linear_": [],
-        "sub_batch_norm3d_": [],
-        "batch_norm3d_": [],
+        "fc_": [],
+        "conv2d_": [],
+        "batch_norm2d_": [],
+        "sub_batch_norm2d_": [],
     }
+
+#    print("model==================================")
+#    f = open('model.list', 'w')
+#    for i in model_key_list:
+#        f.write(i)
+#        f.write('\n')
+#    f.close()
+#
+#    g = open('ckpt.list', 'w')
+#    for i in list(opt_dict.keys()):
+#        g.write(i)
+#        g.write('\n')
+#    g.close()
+#
+#    print(model_key_list[:20])
+#    print("checkpoint==================================")
+#    print(list(opt_dict.keys())[:20])
+#    print("==================================")
 
     pd_key_list = list(opt_dict.keys())
     print("The number of parameters in saved optimizer state dict = {}".format(
@@ -128,9 +145,9 @@ def mapping_opt_dict(opt_dict, model_key_list):
 
     # whether to change name of bn layer
     change_name = False
-    if PNAME["sub_batch_norm3d_"][0][-1] == -float('inf'):
-        PN_key_list.remove("sub_batch_norm3d_")
-        if PNAME["sub_batch_norm3d_"][1][-1] != -float('inf'):
+    if PNAME["sub_batch_norm2d_"][0][-1] == -float('inf'):
+        PN_key_list.remove("sub_batch_norm2d_")
+        if PNAME["sub_batch_norm2d_"][1][-1] != -float('inf'):
             print(
                 "Optimizer state dict saved bn, but Re-build model use sub_bn, changed name!"
             )
@@ -138,8 +155,8 @@ def mapping_opt_dict(opt_dict, model_key_list):
         else:
             print("Optimizer state dict saved bn, and Re-build model use bn")
     else:
-        PN_key_list.remove("batch_norm3d_")
-        if PNAME["sub_batch_norm3d_"][1][-1] == -float('inf'):
+        PN_key_list.remove("batch_norm2d_")
+        if PNAME["sub_batch_norm2d_"][1][-1] == -float('inf'):
             print(
                 "Optimizer state dict saved sub_bn, but Re-build model use bn, changed name!"
             )
@@ -151,14 +168,17 @@ def mapping_opt_dict(opt_dict, model_key_list):
     #update key name
     # sub_bn -> bn name mapping, pre-define dict
     change_dict = {
-        "sub_batch_norm3d_": "batch_norm3d_",
-        "batch_norm3d_": "sub_batch_norm3d_"
+        # "sub_batch_norm3d_": "batch_norm3d_",
+        # "batch_norm3d_": "sub_batch_norm3d_",
+        "sub_batch_norm2d_": "batch_norm2d_",
+        "batch_norm2d_": "sub_batch_norm2d_"
     }
     for key in pd_key_list:
-        for name in PN_key_list[1:]:
+#        for name in PN_key_list[1:]:
+        for name in PN_key_list[2:]:
             if key.startswith(name):
                 start = change_dict[name] if (
-                    change_name and "batch_norm" in name) else name
+                        change_name and "batch_norm" in name) else name
                 str_index = key.split('.')[0].split(name)[-1]
                 index = int(str_index)
                 new_index = str(index +
@@ -166,6 +186,13 @@ def mapping_opt_dict(opt_dict, model_key_list):
                 end = key.split('.')[-1]
                 update_key = start + new_index + '.' + end
                 opt_dict[update_key] = opt_dict.pop(key)
+
+    for key in pd_key_list:
+        if 'fc' in key:
+#            print("************",key)
+
+            opt_dict[key[:-1] + str(int(key[-1])+1)] = opt_dict.pop(key)
+#            opt_dict['fc_0.b_0_velocity_1'] = opt_dict.pop('fc_0.b_0_velocity_0')
 
     return opt_dict
 
@@ -210,6 +237,11 @@ def subn_load(model, ck_path, optimizer=None):
     }
 
     # Weights that do not have match from the pre-trained model.
+#    print("model==================================")
+#    print(list(model_dict.keys())[:10])
+#    print("checkpoint==================================")
+#    print(list(pre_train_dict.keys())[:10])
+#    print("==================================")
     not_load_layers = [
         k for k in model_dict.keys() if k not in pre_train_dict_match.keys()
     ]
