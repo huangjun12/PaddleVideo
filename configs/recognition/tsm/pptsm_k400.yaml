@@ -108,13 +108,17 @@ MIX:
     name: "Mixup"
     alpha: 0.2
 
-METRIC:
-    name: 'CenterCropMetric'
-
-
 PRECISEBN:
   preciseBN_interval: 5     # epoch interval to do preciseBN, default 1.
   num_iters_preciseBN: 200  # how many batches used to do preciseBN, default 200.
+
+
+METRIC:
+    name: 'CenterCropMetric'
+
+INFER:  # For inference
+    num_seg: 8
+    img_size: 224
 
 model_name: "ppTSM"
 log_interval: 10 #Optional, the interal of logger, default:10

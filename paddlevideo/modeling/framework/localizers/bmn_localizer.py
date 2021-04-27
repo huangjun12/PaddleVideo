@@ -56,13 +56,18 @@ class BMNLocalizer(BaseLocalizer):
         """Test step.
         """
         x_data = data_batch[0]
-        gt_iou_map = data_batch[1]
-        gt_start = data_batch[2]
-        gt_end = data_batch[3]
-        gt_iou_map.stop_gradient = True
-        gt_start.stop_gradient = True
-        gt_end.stop_gradient = True
+#        gt_iou_map = data_batch[1]
+#        gt_start = data_batch[2]
+#        gt_end = data_batch[3]
+#        gt_iou_map.stop_gradient = True
+#        gt_start.stop_gradient = True
+#        gt_end.stop_gradient = True
 
         # call Model forward
         pred_bm, pred_start, pred_end = self.forward_net(x_data)
         return pred_bm, pred_start, pred_end
+
+    def infer_step(self, data_batch):
+        """Infer step
+        """
+        return self.test_step(data_batch)

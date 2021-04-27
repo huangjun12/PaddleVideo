@@ -106,17 +106,22 @@ OPTIMIZER: #OPTIMIZER field
         name: 'L2'
         value: 2e-4
 
+PRECISEBN:
+  preciseBN_interval: 5     # epoch interval to do preciseBN, default 1.
+  num_iters_preciseBN: 80  # how many batches used to do preciseBN, default 200.
+
 MIX:
     name: "Mixup"
     alpha: 0.2
 
-METRIC:
+
+METRIC:  # For test
     name: 'CenterCropMetric'
 
+INFER:  # For inference
+    num_seg: 8
+    img_size: 224
 
-PRECISEBN:
-  preciseBN_interval: 5     # epoch interval to do preciseBN, default 1.
-  num_iters_preciseBN: 80  # how many batches used to do preciseBN, default 200.
 
 model_name: "ppTSM"
 log_interval: 20 #Optional, the interal of logger, default:10

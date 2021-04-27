@@ -1,0 +1,135 @@
+[04/27 07:30:27] DALI is not installed, you can improve performance if use DALI
+[04/27 07:30:28] [35mDATASET[0m : 
+[04/27 07:30:28]     [35mbatch_size[0m : [92m4[0m
+[04/27 07:30:28]     [35mnum_workers[0m : [92m8[0m
+[04/27 07:30:28]     [35mtest[0m : 
+[04/27 07:30:28]         [35mfile_path[0m : [92m/workspace/huangjun12/DATA/bmn_data/activitynet_1.3_annotations.json[0m
+[04/27 07:30:28]         [35mformat[0m : [92mBMNDataset[0m
+[04/27 07:30:28]         [35msubset[0m : [92mvalidation[0m
+[04/27 07:30:28]         [35mtest_mode[0m : [92mTrue[0m
+[04/27 07:30:28]     [35mtest_batch_size[0m : [92m1[0m
+[04/27 07:30:28]     [35mtrain[0m : 
+[04/27 07:30:28]         [35mfile_path[0m : [92m/workspace/huangjun12/DATA/bmn_data/activitynet_1.3_annotations.json[0m
+[04/27 07:30:28]         [35mformat[0m : [92mBMNDataset[0m
+[04/27 07:30:28]         [35msubset[0m : [92mtrain[0m
+[04/27 07:30:28]     [35mvalid[0m : 
+[04/27 07:30:28]         [35mfile_path[0m : [92m/workspace/huangjun12/DATA/bmn_data/activitynet_1.3_annotations.json[0m
+[04/27 07:30:28]         [35mformat[0m : [92mBMNDataset[0m
+[04/27 07:30:28]         [35msubset[0m : [92mvalidation[0m
+[04/27 07:30:28] ------------------------------------------------------------
+[04/27 07:30:28] [35mMETRIC[0m : 
+[04/27 07:30:28]     [35mdscale[0m : [92m100[0m
+[04/27 07:30:28]     [35mfile_path[0m : [92m/workspace/huangjun12/DATA/bmn_data/activitynet_1.3_annotations.json[0m
+[04/27 07:30:28]     [35mground_truth_filename[0m : [92m/workspace/huangjun12/DATA/bmn_data/activity_net_1_3_new.json[0m
+[04/27 07:30:28]     [35mname[0m : [92mBMNMetric[0m
+[04/27 07:30:28]     [35moutput_path[0m : [92mdata/bmn/BMN_Test_output[0m
+[04/27 07:30:28]     [35mresult_path[0m : [92mdata/bmn/BMN_Test_results[0m
+[04/27 07:30:28]     [35msubset[0m : [92mvalidation[0m
+[04/27 07:30:28]     [35mtscale[0m : [92m100[0m
+[04/27 07:30:28] ------------------------------------------------------------
+[04/27 07:30:28] [35mMODEL[0m : 
+[04/27 07:30:28]     [35mbackbone[0m : 
+[04/27 07:30:28]         [35mdscale[0m : [92m100[0m
+[04/27 07:30:28]         [35mname[0m : [92mBMN[0m
+[04/27 07:30:28]         [35mnum_sample[0m : [92m32[0m
+[04/27 07:30:28]         [35mnum_sample_perbin[0m : [92m3[0m
+[04/27 07:30:28]         [35mprop_boundary_ratio[0m : [92m0.5[0m
+[04/27 07:30:28]         [35mtscale[0m : [92m100[0m
+[04/27 07:30:28]     [35mframework[0m : [92mBMNLocalizer[0m
+[04/27 07:30:28]     [35mloss[0m : 
+[04/27 07:30:28]         [35mdscale[0m : [92m100[0m
+[04/27 07:30:28]         [35mname[0m : [92mBMNLoss[0m
+[04/27 07:30:28]         [35mtscale[0m : [92m100[0m
+[04/27 07:30:28] ------------------------------------------------------------
+[04/27 07:30:28] [35mOPTIMIZER[0m : 
+[04/27 07:30:28]     [35mlearning_rate[0m : 
+[04/27 07:30:28]         [35mboundaries[0m : [92m[4200][0m
+[04/27 07:30:28]         [35miter_step[0m : [92mTrue[0m
+[04/27 07:30:28]         [35mname[0m : [92mCustomPiecewiseDecay[0m
+[04/27 07:30:28]         [35mvalues[0m : [92m[0.001, 0.0001][0m
+[04/27 07:30:28]     [35mname[0m : [92mAdam[0m
+[04/27 07:30:28]     [35mweight_decay[0m : 
+[04/27 07:30:28]         [35mname[0m : [92mL2[0m
+[04/27 07:30:28]         [35mvalue[0m : [92m0.0001[0m
+[04/27 07:30:28] ------------------------------------------------------------
+[04/27 07:30:28] [35mPIPELINE[0m : 
+[04/27 07:30:28]     [35mtest[0m : 
+[04/27 07:30:28]         [35mload_feat[0m : 
+[04/27 07:30:28]             [35mfeat_path[0m : [92m/workspace/huangjun12/DATA/bmn_data/fix_feat_100[0m
+[04/27 07:30:28]             [35mname[0m : [92mLoadFeat[0m
+[04/27 07:30:28]         [35mtransform[0m : 
+[04/27 07:30:28]             [35mGetMatchMap[0m : 
+[04/27 07:30:28]                 [35mtscale[0m : [92m100[0m
+[04/27 07:30:28]             [35mGetVideoLabel[0m : 
+[04/27 07:30:28]                 [35mdscale[0m : [92m100[0m
+[04/27 07:30:28]                 [35mtscale[0m : [92m100[0m
+[04/27 07:30:28]     [35mtrain[0m : 
+[04/27 07:30:28]         [35mload_feat[0m : 
+[04/27 07:30:28]             [35mfeat_path[0m : [92m/workspace/huangjun12/DATA/bmn_data/fix_feat_100[0m
+[04/27 07:30:28]             [35mname[0m : [92mLoadFeat[0m
+[04/27 07:30:28]         [35mtransform[0m : 
+[04/27 07:30:28]             [35mGetMatchMap[0m : 
+[04/27 07:30:28]                 [35mtscale[0m : [92m100[0m
+[04/27 07:30:28]             [35mGetVideoLabel[0m : 
+[04/27 07:30:28]                 [35mdscale[0m : [92m100[0m
+[04/27 07:30:28]                 [35mtscale[0m : [92m100[0m
+[04/27 07:30:28]     [35mvalid[0m : 
+[04/27 07:30:28]         [35mload_feat[0m : 
+[04/27 07:30:28]             [35mfeat_path[0m : [92m/workspace/huangjun12/DATA/bmn_data/fix_feat_100[0m
+[04/27 07:30:28]             [35mname[0m : [92mLoadFeat[0m
+[04/27 07:30:28]         [35mtransform[0m : 
+[04/27 07:30:28]             [35mGetMatchMap[0m : 
+[04/27 07:30:28]                 [35mtscale[0m : [92m100[0m
+[04/27 07:30:28]             [35mGetVideoLabel[0m : 
+[04/27 07:30:28]                 [35mdscale[0m : [92m100[0m
+[04/27 07:30:28]                 [35mtscale[0m : [92m100[0m
+[04/27 07:30:28] ------------------------------------------------------------
+[04/27 07:30:28] [35mepochs[0m : [92m9[0m
+[04/27 07:30:28] [35mlog_level[0m : [92mINFO[0m
+[04/27 07:30:28] [35mmodel_name[0m : [92mBMN[0m
+[04/27 07:30:28] [35mresume_from[0m : [92m[0m
+[04/27 07:30:44] train subset video numbers: 9649
+[04/27 07:30:44] validation subset video numbers: 4728
+[04/27 07:30:46] [35mepoch:[  1/9  ][0m [95mtrain step:0   [0m [92mloss: 2.57526 lr: 0.001000 elapse: 2.131 reader: 1.259[0ms ips: 1.87705 instance/sec.
+[04/27 07:30:47] epoch:[  1/9  ] [95mtrain step:10  [0m [92mloss: 1.94739 lr: 0.001000 elapse: 0.115 reader: 0.001[0ms ips: 34.80707 instance/sec.
+[04/27 07:30:48] epoch:[  1/9  ] [95mtrain step:20  [0m [92mloss: 1.70778 lr: 0.001000 elapse: 0.100 reader: 0.000[0ms ips: 39.86422 instance/sec.
+[04/27 07:30:50] epoch:[  1/9  ] [95mtrain step:30  [0m [92mloss: 2.20084 lr: 0.001000 elapse: 0.147 reader: 0.000[0ms ips: 27.28211 instance/sec.
+[04/27 07:30:51] epoch:[  1/9  ] [95mtrain step:40  [0m [92mloss: 1.93805 lr: 0.001000 elapse: 0.120 reader: 0.000[0ms ips: 33.31622 instance/sec.
+[04/27 07:30:52] epoch:[  1/9  ] [95mtrain step:50  [0m [92mloss: 2.00066 lr: 0.001000 elapse: 0.086 reader: 0.000[0ms ips: 46.48664 instance/sec.
+[04/27 07:30:53] epoch:[  1/9  ] [95mtrain step:60  [0m [92mloss: 2.04826 lr: 0.001000 elapse: 0.096 reader: 0.001[0ms ips: 41.71455 instance/sec.
+[04/27 07:30:54] epoch:[  1/9  ] [95mtrain step:70  [0m [92mloss: 1.95183 lr: 0.001000 elapse: 0.098 reader: 0.001[0ms ips: 40.99303 instance/sec.
+[04/27 07:30:55] epoch:[  1/9  ] [95mtrain step:80  [0m [92mloss: 1.72389 lr: 0.001000 elapse: 0.088 reader: 0.000[0ms ips: 45.45920 instance/sec.
+[04/27 07:30:56] epoch:[  1/9  ] [95mtrain step:90  [0m [92mloss: 2.00020 lr: 0.001000 elapse: 0.105 reader: 0.000[0ms ips: 37.96240 instance/sec.
+[04/27 07:30:57] epoch:[  1/9  ] [95mtrain step:100 [0m [92mloss: 1.98277 lr: 0.001000 elapse: 0.147 reader: 0.000[0ms ips: 27.27515 instance/sec.
+[04/27 07:30:59] epoch:[  1/9  ] [95mtrain step:110 [0m [92mloss: 1.72609 lr: 0.001000 elapse: 0.146 reader: 0.000[0ms ips: 27.36693 instance/sec.
+[04/27 07:31:00] epoch:[  1/9  ] [95mtrain step:120 [0m [92mloss: 1.82504 lr: 0.001000 elapse: 0.121 reader: 0.001[0ms ips: 32.98628 instance/sec.
+[04/27 07:31:01] epoch:[  1/9  ] [95mtrain step:130 [0m [92mloss: 1.54215 lr: 0.001000 elapse: 0.102 reader: 0.000[0ms ips: 39.19214 instance/sec.
+[04/27 07:31:02] epoch:[  1/9  ] [95mtrain step:140 [0m [92mloss: 1.74380 lr: 0.001000 elapse: 0.151 reader: 0.001[0ms ips: 26.42485 instance/sec.
+[04/27 07:31:03] epoch:[  1/9  ] [95mtrain step:150 [0m [92mloss: 2.29599 lr: 0.001000 elapse: 0.164 reader: 0.000[0ms ips: 24.41899 instance/sec.
+[04/27 07:31:04] epoch:[  1/9  ] [95mtrain step:160 [0m [92mloss: 1.48411 lr: 0.001000 elapse: 0.116 reader: 0.001[0ms ips: 34.56141 instance/sec.
+[04/27 07:31:05] epoch:[  1/9  ] [95mtrain step:170 [0m [92mloss: 1.81671 lr: 0.001000 elapse: 0.144 reader: 0.000[0ms ips: 27.86256 instance/sec.
+[04/27 07:31:07] epoch:[  1/9  ] [95mtrain step:180 [0m [92mloss: 1.25158 lr: 0.001000 elapse: 0.130 reader: 0.000[0ms ips: 30.77965 instance/sec.
+[04/27 07:31:08] epoch:[  1/9  ] [95mtrain step:190 [0m [92mloss: 1.13416 lr: 0.001000 elapse: 0.114 reader: 0.000[0ms ips: 35.11531 instance/sec.
+[04/27 07:31:09] epoch:[  1/9  ] [95mtrain step:200 [0m [92mloss: 2.05713 lr: 0.001000 elapse: 0.145 reader: 0.000[0ms ips: 27.61741 instance/sec.
+[04/27 07:31:10] epoch:[  1/9  ] [95mtrain step:210 [0m [92mloss: 1.59251 lr: 0.001000 elapse: 0.102 reader: 0.000[0ms ips: 39.17274 instance/sec.
+[04/27 07:31:11] epoch:[  1/9  ] [95mtrain step:220 [0m [92mloss: 1.46062 lr: 0.001000 elapse: 0.147 reader: 0.001[0ms ips: 27.27063 instance/sec.
+[04/27 07:31:12] epoch:[  1/9  ] [95mtrain step:230 [0m [92mloss: 2.12024 lr: 0.001000 elapse: 0.137 reader: 0.000[0ms ips: 29.30047 instance/sec.
+[04/27 07:31:14] epoch:[  1/9  ] [95mtrain step:240 [0m [92mloss: 1.49664 lr: 0.001000 elapse: 0.120 reader: 0.000[0ms ips: 33.29566 instance/sec.
+[04/27 07:31:15] epoch:[  1/9  ] [95mtrain step:250 [0m [92mloss: 1.30640 lr: 0.001000 elapse: 0.106 reader: 0.000[0ms ips: 37.65296 instance/sec.
+[04/27 07:31:16] epoch:[  1/9  ] [95mtrain step:260 [0m [92mloss: 2.03272 lr: 0.001000 elapse: 0.087 reader: 0.001[0ms ips: 46.05052 instance/sec.
+[04/27 07:31:17] epoch:[  1/9  ] [95mtrain step:270 [0m [92mloss: 0.92696 lr: 0.001000 elapse: 0.087 reader: 0.000[0ms ips: 46.04710 instance/sec.
+[04/27 07:31:18] epoch:[  1/9  ] [95mtrain step:280 [0m [92mloss: 1.74347 lr: 0.001000 elapse: 0.087 reader: 0.000[0ms ips: 46.20677 instance/sec.
+[04/27 07:31:19] epoch:[  1/9  ] [95mtrain step:290 [0m [92mloss: 1.58243 lr: 0.001000 elapse: 0.095 reader: 0.000[0ms ips: 41.90648 instance/sec.
+[04/27 07:31:20] epoch:[  1/9  ] [95mtrain step:300 [0m [92mloss: 1.69332 lr: 0.001000 elapse: 0.087 reader: 0.000[0ms ips: 45.94169 instance/sec.
+[04/27 07:31:21] epoch:[  1/9  ] [95mtrain step:310 [0m [92mloss: 1.95488 lr: 0.001000 elapse: 0.119 reader: 0.000[0ms ips: 33.59327 instance/sec.
+[04/27 07:31:23] epoch:[  1/9  ] [95mtrain step:320 [0m [92mloss: 1.37647 lr: 0.001000 elapse: 0.097 reader: 0.000[0ms ips: 41.17381 instance/sec.
+[04/27 07:31:24] epoch:[  1/9  ] [95mtrain step:330 [0m [92mloss: 1.77920 lr: 0.001000 elapse: 0.149 reader: 0.001[0ms ips: 26.88234 instance/sec.
+[04/27 07:31:25] epoch:[  1/9  ] [95mtrain step:340 [0m [92mloss: 1.46444 lr: 0.001000 elapse: 0.131 reader: 0.000[0ms ips: 30.46603 instance/sec.
+[04/27 07:31:26] epoch:[  1/9  ] [95mtrain step:350 [0m [92mloss: 1.72819 lr: 0.001000 elapse: 0.139 reader: 0.001[0ms ips: 28.73190 instance/sec.
+[04/27 07:31:27] epoch:[  1/9  ] [95mtrain step:360 [0m [92mloss: 1.29289 lr: 0.001000 elapse: 0.089 reader: 0.001[0ms ips: 45.01111 instance/sec.
+[04/27 07:31:28] epoch:[  1/9  ] [95mtrain step:370 [0m [92mloss: 1.43886 lr: 0.001000 elapse: 0.125 reader: 0.000[0ms ips: 32.09169 instance/sec.
+[04/27 07:31:29] epoch:[  1/9  ] [95mtrain step:380 [0m [92mloss: 2.33825 lr: 0.001000 elapse: 0.106 reader: 0.000[0ms ips: 37.66716 instance/sec.
+[04/27 07:31:31] epoch:[  1/9  ] [95mtrain step:390 [0m [92mloss: 1.80503 lr: 0.001000 elapse: 0.119 reader: 0.000[0ms ips: 33.52125 instance/sec.
+[04/27 07:31:32] epoch:[  1/9  ] [95mtrain step:400 [0m [92mloss: 1.64471 lr: 0.001000 elapse: 0.087 reader: 0.000[0ms ips: 46.02601 instance/sec.
+[04/27 07:31:33] epoch:[  1/9  ] [95mtrain step:410 [0m [92mloss: 1.58271 lr: 0.001000 elapse: 0.100 reader: 0.000[0ms ips: 39.81068 instance/sec.
+[04/27 07:31:33] main proc 33509 exit, kill process group 33380
